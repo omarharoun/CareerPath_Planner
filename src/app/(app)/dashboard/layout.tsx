@@ -4,6 +4,7 @@ import { ReactNode } from "react";
 import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { UserButton } from "@clerk/nextjs";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const user = await currentUser();
@@ -29,9 +30,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
           </div>
           <div className="flex items-center gap-3">
             <Link href="/dashboard/profile" className="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700">Profile</Link>
-            <form action="/auth/signout" method="post">
-              <button className="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700">Sign out</button>
-            </form>
+            <UserButton afterSignOutUrl="/" />
           </div>
         </div>
       </header>

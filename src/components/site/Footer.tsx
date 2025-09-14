@@ -8,7 +8,7 @@ export default function SiteFooter() {
         <div className="flex items-center gap-4 text-sm">
           <Link href="/login" className="hover:underline">Sign in</Link>
           <Link href="/sign-up" className="hover:underline">Sign up</Link>
-          <span className="opacity-60">Coming soon</span>
+          <Link href="/app" className="hover:underline">Open app</Link>
           <a href="#" className="hover:underline">Privacy</a>
           <a href="#" className="hover:underline">Terms</a>
         </div>

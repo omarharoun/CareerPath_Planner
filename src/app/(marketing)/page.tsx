@@ -16,7 +16,7 @@ export default function MarketingHome() {
               guidance from an AI coach tailored to your goals.
             </p>
             <div className="mt-8 flex items-center gap-3">
-              <button disabled className="px-5 py-3 rounded bg-gray-900 text-white dark:bg-white dark:text-black opacity-60 cursor-not-allowed">Coming soon</button>
+              <Link href="/app" className="px-5 py-3 rounded bg-gray-900 text-white dark:bg-white dark:text-black">Open app</Link>
               <Link href="/login" className="px-5 py-3 rounded border border-gray-300 dark:border-gray-700">Sign in</Link>
               <Link href="/sign-up" className="px-5 py-3 rounded border border-gray-300 dark:border-gray-700">Create account</Link>
             </div>
