@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { SignUp } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default function SignUpPage() {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY;
@@ -16,7 +17,12 @@ export default function SignUpPage() {
   }
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <SignUp appearance={{ variables: { colorPrimary: "#111827" } }} />
+      <div className="flex flex-col items-center gap-4">
+        <SignUp appearance={{ variables: { colorPrimary: "#111827" } }} forceRedirectUrl="/dashboard" />
+        <div className="text-sm text-gray-600 dark:text-gray-300">
+          Already have an account? <Link href="/login" className="underline">Sign in</Link>
+        </div>
+      </div>
     </div>
   );
 }
