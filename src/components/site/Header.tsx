@@ -14,7 +14,7 @@ export default function SiteHeader() {
         <div className="flex items-center gap-3">
           <Link href="/login" className="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700">Sign in</Link>
           <Link href="/sign-up" className="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700">Sign up</Link>
-          <Link href="/app" className="text-sm px-3 py-1.5 rounded bg-gray-900 text-white dark:bg-white dark:text-black">Open app</Link>
+          <button disabled className="cursor-not-allowed opacity-60 text-sm px-3 py-1.5 rounded bg-gray-900 text-white dark:bg-white dark:text-black">Coming soon</button>
         </div>
       </div>
     </header>
