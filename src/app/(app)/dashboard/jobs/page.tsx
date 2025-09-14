@@ -20,11 +20,13 @@ const statuses: Job["status"][] = ["saved", "applied", "interview", "offer", "re
 export default function JobsPage() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [reloadToken, setReloadToken] = useState(0);
+  const [query, setQuery] = useState("");
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<Job["status"]>("saved");
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
   async function fetchJobs() {
     // light ping to validate access; kanban handles its own fetch
@@ -46,12 +48,23 @@ export default function JobsPage() {
       setStatus("saved");
       setUrl("");
       setReloadToken((t) => t + 1);
+      setMessage("Job added");
+      setTimeout(() => setMessage(""), 1500);
     }
   }
 
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Jobs</h1>
+      {message ? <div className="mb-3 text-sm px-3 py-2 rounded border border-green-200 bg-green-50 text-green-700">{message}</div> : null}
+      <div className="mb-4">
+        <input
+          className="w-full md:w-80 border rounded px-3 py-2 bg-transparent"
+          placeholder="Search company or title…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+      </div>
       <form onSubmit={onAddJob} className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-6">
         <div className="md:col-span-1">
           <label className="block text-sm mb-1">Company</label>
@@ -78,7 +91,7 @@ export default function JobsPage() {
         </div>
       </form>
 
-      {loading ? <div>Loading…</div> : <JobsKanban reloadToken={reloadToken} />}
+      {loading ? <div>Loading…</div> : <JobsKanban reloadToken={reloadToken} filterQuery={query} />}
     </div>
   );
 }

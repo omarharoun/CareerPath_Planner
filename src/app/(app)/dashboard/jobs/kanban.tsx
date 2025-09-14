@@ -13,7 +13,7 @@ type Job = {
 
 const COLUMNS: Job["status"][] = ["saved", "applied", "interview", "offer", "rejected"];
 
-export default function JobsKanban({ reloadToken = 0 }: { reloadToken?: number }) {
+export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { reloadToken?: number; filterQuery?: string }) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [jobs, setJobs] = useState<Job[]>([]);
 
@@ -49,6 +49,11 @@ export default function JobsKanban({ reloadToken = 0 }: { reloadToken?: number }
     if (jobId) move(jobId, status);
   }
 
+  const q = filterQuery.toLowerCase();
+  const visible = q
+    ? jobs.filter((j) => j.company.toLowerCase().includes(q) || j.title.toLowerCase().includes(q))
+    : jobs;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
       {COLUMNS.map((col) => (
@@ -60,7 +65,7 @@ export default function JobsKanban({ reloadToken = 0 }: { reloadToken?: number }
         >
           <div className="text-sm font-semibold capitalize mb-2">{col}</div>
           <div className="space-y-2">
-            {jobs.filter((j) => j.status === col).map((j) => (
+            {visible.filter((j) => j.status === col).map((j) => (
               <div
                 key={j.id}
                 draggable
