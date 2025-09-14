@@ -1,17 +1,16 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export default async function Home() {
+export default async function AppRedirectPage() {
   const supabase = createSupabaseServerClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) {
-    redirect("/dashboard");
-  }
-
-  redirect("/login");
+  const target = user ? "/dashboard" : "/login";
+  return (
+    <meta httpEquiv="refresh" content={`0; url=${target}`} />
+  );
 }
+

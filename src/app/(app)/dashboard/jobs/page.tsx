@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import JobsKanban from "./kanban";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Job = {
@@ -80,25 +81,7 @@ export default function JobsPage() {
         </div>
       </form>
 
-      {loading ? (
-        <div>Loading…</div>
-      ) : (
-        <ul className="space-y-2">
-          {jobs.map((j) => (
-            <li key={j.id} className="border rounded px-3 py-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{j.company} — {j.title}</div>
-                  <div className="text-xs text-gray-500">Status: {j.status}</div>
-                </div>
-                {j.url ? (
-                  <a href={j.url} target="_blank" rel="noreferrer" className="text-sm underline">Listing</a>
-                ) : null}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      {loading ? <div>Loading…</div> : <JobsKanban />}
     </div>
   );
 }
