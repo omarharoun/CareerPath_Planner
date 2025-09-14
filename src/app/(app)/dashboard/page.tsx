@@ -1,13 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 
 export default async function DashboardHomePage() {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await createSupabaseServerClient();
+  const user = await currentUser();
 
   const [{ count: skillsCount }, { count: jobsCount }, { count: savedCount }] = await Promise.all([
     supabase.from("skills").select("id", { count: "exact", head: true }),
@@ -17,7 +16,7 @@ export default async function DashboardHomePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-2">Welcome{user?.user_metadata?.full_name ? `, ${user.user_metadata.full_name}` : ""}</h1>
+      <h1 className="text-2xl font-semibold mb-2">Welcome{user?.fullName ? `, ${user.fullName}` : ""}</h1>
       <p className="text-gray-600">Track your skills, knowledge, and job search progress.</p>
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
