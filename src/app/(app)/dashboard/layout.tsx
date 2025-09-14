@@ -27,12 +27,16 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <Link href="/dashboard/coach">AI Coach</Link>
               <Link href="/dashboard/career">Career</Link>
               <Link href="/dashboard/resources">Resources</Link>
+              <Link href="/dashboard/library">Library</Link>
               <Link href="/dashboard/learn">Learn</Link>
             </nav>
           </div>
-          <form action="/auth/signout" method="post">
-            <button className="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700">Sign out</button>
-          </form>
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard/profile" className="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700">Profile</Link>
+            <form action="/auth/signout" method="post">
+              <button className="text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-700">Sign out</button>
+            </form>
+          </div>
         </div>
       </header>
       <main className="max-w-6xl mx-auto px-4 py-6">{children}</main>
