@@ -25,6 +25,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
               <Link href="/dashboard/skills">Skills</Link>
               <Link href="/dashboard/jobs">Jobs</Link>
               <Link href="/dashboard/coach">AI Coach</Link>
+              <Link href="/dashboard/career">Career</Link>
+              <Link href="/dashboard/resources">Resources</Link>
+              <Link href="/dashboard/learn">Learn</Link>
             </nav>
           </div>
           <form action="/auth/signout" method="post">
