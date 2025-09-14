@@ -35,6 +35,11 @@ export default function JobsKanban({ reloadToken = 0 }: { reloadToken?: number }
     setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, status } : j)));
   }
 
+  async function remove(jobId: string) {
+    await supabase.from("jobs").delete().eq("id", jobId);
+    setJobs((prev) => prev.filter((j) => j.id !== jobId));
+  }
+
   function onDragStart(e: React.DragEvent, jobId: string) {
     e.dataTransfer.setData("text/plain", jobId);
   }
@@ -64,6 +69,9 @@ export default function JobsKanban({ reloadToken = 0 }: { reloadToken?: number }
               >
                 <div className="font-medium text-sm">{j.company} — {j.title}</div>
                 {j.url ? <a className="text-xs underline" href={j.url} target="_blank" rel="noreferrer">Listing</a> : null}
+                <div className="mt-2 flex items-center gap-2">
+                  <button onClick={() => remove(j.id)} className="text-xs px-2 py-0.5 rounded border">Delete</button>
+                </div>
               </div>
             ))}
           </div>

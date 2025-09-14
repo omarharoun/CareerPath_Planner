@@ -58,6 +58,16 @@ export default function LearnPage() {
     reload();
   }
 
+  async function deleteItem(itemId: string) {
+    await supabase.from("learning_items").delete().eq("id", itemId);
+    reload();
+  }
+
+  async function deleteModule(moduleId: string) {
+    await supabase.from("learning_modules").delete().eq("id", moduleId);
+    reload();
+  }
+
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Learning Plan</h1>
@@ -74,7 +84,10 @@ export default function LearnPage() {
                 <h2 className="font-medium">{m.title}</h2>
                 {m.description ? <p className="text-sm text-gray-600 dark:text-gray-300">{m.description}</p> : null}
               </div>
-              <button className="text-sm px-3 py-1.5 rounded border" onClick={() => addItem(m.id)}>Add Item</button>
+              <div className="flex items-center gap-2">
+                <button className="text-sm px-3 py-1.5 rounded border" onClick={() => addItem(m.id)}>Add Item</button>
+                <button className="text-sm px-3 py-1.5 rounded border" onClick={() => deleteModule(m.id)}>Delete Module</button>
+              </div>
             </div>
             <ul className="mt-3 space-y-2">
               {(itemsByModule[m.id] || []).map((it) => (
@@ -87,6 +100,9 @@ export default function LearnPage() {
                         <a className="text-xs underline" href={it.url} target="_blank" rel="noreferrer">Open</a>
                       ) : null}
                     </div>
+                  </div>
+                  <div>
+                    <button className="text-xs px-3 py-1.5 rounded border" onClick={() => deleteItem(it.id)}>Delete</button>
                   </div>
                 </li>
               ))}

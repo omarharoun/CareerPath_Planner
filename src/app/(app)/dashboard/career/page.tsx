@@ -63,6 +63,17 @@ export default function CareerPage() {
     if (selectedId) reloadMilestones(selectedId);
   }
 
+  async function deleteMilestone(id: string) {
+    await supabase.from("milestones").delete().eq("id", id);
+    if (selectedId) reloadMilestones(selectedId);
+  }
+
+  async function deletePath(pathId: string) {
+    await supabase.from("career_paths").delete().eq("id", pathId);
+    setSelectedId(null);
+    reloadPaths();
+  }
+
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Career Path</h1>
@@ -75,12 +86,15 @@ export default function CareerPage() {
           <ul className="space-y-1">
             {paths.map((p) => (
               <li key={p.id}>
-                <button
-                  onClick={() => setSelectedId(p.id)}
-                  className={`w-full text-left px-3 py-2 rounded border ${selectedId === p.id ? "bg-gray-100 dark:bg-gray-800" : ""}`}
-                >
-                  {p.title}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSelectedId(p.id)}
+                    className={`flex-1 text-left px-3 py-2 rounded border ${selectedId === p.id ? "bg-gray-100 dark:bg-gray-800" : ""}`}
+                  >
+                    {p.title}
+                  </button>
+                  <button className="text-xs px-2 py-1 rounded border" onClick={() => deletePath(p.id)}>Delete</button>
+                </div>
               </li>
             ))}
           </ul>
@@ -100,6 +114,7 @@ export default function CareerPage() {
                     {m.target_date ? <div className="text-xs text-gray-500">Target: {m.target_date}</div> : null}
                   </div>
                 </div>
+                <button className="text-xs px-3 py-1.5 rounded border" onClick={() => deleteMilestone(m.id)}>Delete</button>
               </li>
             ))}
           </ul>

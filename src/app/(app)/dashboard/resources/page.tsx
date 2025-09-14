@@ -25,7 +25,19 @@ export default function ResourcesPage() {
         .select("id,title,url,source,tags")
         .order("created_at", { ascending: false })
         .limit(100);
-      if (!ignore && data) setCatalog(data as unknown as Resource[]);
+      if (!ignore && data) {
+        const arr = data as unknown as Resource[];
+        setCatalog(arr);
+        if (arr.length === 0) {
+          await importDemo();
+          const { data: again } = await supabase
+            .from("resources")
+            .select("id,title,url,source,tags")
+            .order("created_at", { ascending: false })
+            .limit(100);
+          if (!ignore && again) setCatalog(again as unknown as Resource[]);
+        }
+      }
     }
     load();
     return () => {
@@ -46,6 +58,17 @@ export default function ResourcesPage() {
     setSaving(resourceId);
     await supabase.from("saved_resources").insert({ resource_id: resourceId });
     setSaving(null);
+  }
+
+  async function importDemo() {
+    const demo: Omit<Resource, "id">[] = [
+      { title: "How to tailor your resume for each job", url: "https://example.com/resume-tailor", source: "Blog", tags: ["resume", "ats"] },
+      { title: "Best outreach templates for cold emails", url: "https://example.com/outreach-templates", source: "Guide", tags: ["outreach", "networking"] },
+      { title: "Top SQL interview questions", url: "https://example.com/sql-interview", source: "Article", tags: ["sql", "interview"] },
+    ];
+    for (const r of demo) {
+      await supabase.from("resources").insert({ title: r.title, url: r.url, source: r.source || null, tags: r.tags || [] });
+    }
   }
 
   return (
