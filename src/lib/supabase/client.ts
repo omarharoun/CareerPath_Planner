@@ -1,7 +1,16 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
-import { useAuth } from "@clerk/nextjs";
+
+declare global {
+  interface Window {
+    Clerk?: {
+      session?: {
+        getToken: (options?: { template?: string }) => Promise<string | null>;
+      };
+    };
+  }
+}
 
 export function createSupabaseBrowserClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -16,15 +25,14 @@ export function createSupabaseBrowserClient() {
   return createBrowserClient(supabaseUrl, supabaseAnonKey, {
     global: {
       fetch: async (input, init) => {
+        const headers = new Headers(init?.headers || {});
         try {
-          const { getToken } = useAuth();
-          const token = await getToken({ template: "supabase" });
-          const headers = new Headers(init?.headers || {});
-          if (token) headers.set("Authorization", `Bearer ${token}`);
-          return fetch(input, { ...init, headers });
-        } catch {
-          return fetch(input, init);
-        }
+          if (typeof window !== "undefined" && window.Clerk?.session?.getToken) {
+            const token = await window.Clerk.session.getToken({ template: "supabase" });
+            if (token) headers.set("Authorization", `Bearer ${token}`);
+          }
+        } catch {}
+        return fetch(input, { ...init, headers });
       },
     },
   });
