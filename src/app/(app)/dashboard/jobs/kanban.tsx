@@ -16,6 +16,7 @@ const COLUMNS: Job["status"][] = ["saved", "applied", "interview", "offer", "rej
 export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { reloadToken?: number; filterQuery?: string }) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     reload();
@@ -38,6 +39,8 @@ export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { relo
   async function remove(jobId: string) {
     await supabase.from("jobs").delete().eq("id", jobId);
     setJobs((prev) => prev.filter((j) => j.id !== jobId));
+    setMessage("Job deleted");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   function onDragStart(e: React.DragEvent, jobId: string) {
@@ -55,7 +58,9 @@ export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { relo
     : jobs;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      {message ? <div className="mb-3 text-sm px-3 py-2 rounded border border-green-200 bg-green-50 text-green-700">{message}</div> : null}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
       {COLUMNS.map((col) => (
         <div
           key={col}
@@ -82,6 +87,7 @@ export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { relo
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }

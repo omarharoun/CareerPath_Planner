@@ -11,6 +11,7 @@ export default function LearnPage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [itemsByModule, setItemsByModule] = useState<Record<string, Item[]>>({});
   const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     reload();
@@ -43,6 +44,8 @@ export default function LearnPage() {
     await supabase.from("learning_modules").insert({ title });
     setNewModuleTitle("");
     reload();
+    setMessage("Module added");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function addItem(moduleId: string) {
@@ -51,26 +54,35 @@ export default function LearnPage() {
     const url = prompt("Optional URL");
     await supabase.from("learning_items").insert({ module_id: moduleId, title, url: url || null });
     reload();
+    setMessage("Item added");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function toggleItem(item: Item) {
     await supabase.from("learning_items").update({ completed: !item.completed }).eq("id", item.id);
     reload();
+    setMessage("Item updated");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function deleteItem(itemId: string) {
     await supabase.from("learning_items").delete().eq("id", itemId);
     reload();
+    setMessage("Item deleted");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function deleteModule(moduleId: string) {
     await supabase.from("learning_modules").delete().eq("id", moduleId);
     reload();
+    setMessage("Module deleted");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Learning Plan</h1>
+      {message ? <div className="mb-3 text-sm px-3 py-2 rounded border border-green-200 bg-green-50 text-green-700">{message}</div> : null}
       <form onSubmit={addModule} className="flex gap-2 mb-6">
         <input className="flex-1 border rounded px-3 py-2 bg-transparent" placeholder="New module title" value={newModuleTitle} onChange={(e) => setNewModuleTitle(e.target.value)} />
         <button className="px-4 py-2 border rounded">Add Module</button>

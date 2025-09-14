@@ -12,6 +12,7 @@ export default function CareerPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [newTitle, setNewTitle] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     reloadPaths();
@@ -47,6 +48,8 @@ export default function CareerPage() {
     await supabase.from("career_paths").insert({ title });
     setNewTitle("");
     reloadPaths();
+    setMessage("Path added");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function addMilestone() {
@@ -56,27 +59,36 @@ export default function CareerPage() {
     const target = prompt("Target date (YYYY-MM-DD)") || null;
     await supabase.from("milestones").insert({ career_path_id: selectedId, title, target_date: target });
     reloadMilestones(selectedId);
+    setMessage("Milestone added");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function toggleMilestone(id: string, completed: boolean) {
     await supabase.from("milestones").update({ completed: !completed }).eq("id", id);
     if (selectedId) reloadMilestones(selectedId);
+    setMessage("Milestone updated");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function deleteMilestone(id: string) {
     await supabase.from("milestones").delete().eq("id", id);
     if (selectedId) reloadMilestones(selectedId);
+    setMessage("Milestone deleted");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function deletePath(pathId: string) {
     await supabase.from("career_paths").delete().eq("id", pathId);
     setSelectedId(null);
     reloadPaths();
+    setMessage("Path deleted");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Career Path</h1>
+      {message ? <div className="mb-3 text-sm px-3 py-2 rounded border border-green-200 bg-green-50 text-green-700">{message}</div> : null}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <aside className="md:col-span-1 border rounded p-3">
           <form onSubmit={addPath} className="flex gap-2 mb-3">

@@ -16,6 +16,7 @@ export default function LibraryPage() {
   const [items, setItems] = useState<Saved[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     reload().finally(() => setLoading(false));
@@ -33,6 +34,8 @@ export default function LibraryPage() {
   async function remove(id: string) {
     await supabase.from("saved_resources").delete().eq("id", id);
     setItems((prev: Saved[]) => prev.filter((it: Saved) => it.id !== id));
+    setMessage("Removed from library");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   const filtered = items.filter((it: Saved) => {
@@ -49,6 +52,7 @@ export default function LibraryPage() {
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Saved Library</h1>
+      {message ? <div className="mb-3 text-sm px-3 py-2 rounded border border-green-200 bg-green-50 text-green-700">{message}</div> : null}
       <div className="mb-4">
         <input
           value={query}

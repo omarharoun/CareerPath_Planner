@@ -20,6 +20,9 @@ export default function SkillsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
   const [editingLevel, setEditingLevel] = useState<number | "">("");
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"created" | "name" | "level">("created");
+  const [message, setMessage] = useState("");
 
   async function fetchSkills() {
     const { data, error } = await supabase
@@ -44,6 +47,8 @@ export default function SkillsPage() {
       setName("");
       setLevel("");
       fetchSkills();
+      setMessage("Skill added");
+      setTimeout(() => setMessage(""), 1500);
     }
   }
 
@@ -69,16 +74,35 @@ export default function SkillsPage() {
     await supabase.from("skills").update(payload).eq("id", editingId);
     cancelEdit();
     fetchSkills();
+    setMessage("Skill updated");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   async function deleteSkill(skillId: string) {
     await supabase.from("skills").delete().eq("id", skillId);
     setSkills((prev) => prev.filter((s) => s.id !== skillId));
+    setMessage("Skill deleted");
+    setTimeout(() => setMessage(""), 1500);
   }
 
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Skills</h1>
+      {message ? <div className="mb-3 text-sm px-3 py-2 rounded border border-green-200 bg-green-50 text-green-700">{message}</div> : null}
+      <div className="flex flex-wrap gap-3 items-end mb-4">
+        <div>
+          <label className="block text-sm mb-1">Search</label>
+          <input className="w-64 border rounded px-3 py-2 bg-transparent" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search name…" />
+        </div>
+        <div>
+          <label className="block text-sm mb-1">Sort by</label>
+          <select className="w-44 border rounded px-3 py-2 bg-transparent" value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}>
+            <option value="created">Created</option>
+            <option value="name">Name</option>
+            <option value="level">Level</option>
+          </select>
+        </div>
+      </div>
       <form onSubmit={onAddSkill} className="flex items-end gap-2 mb-6">
         <div className="flex-1">
           <label className="block text-sm mb-1">Name</label>
@@ -107,7 +131,14 @@ export default function SkillsPage() {
         <div>Loading…</div>
       ) : (
         <ul className="space-y-2">
-          {skills.map((s) => (
+          {skills
+            .filter((s) => s.name.toLowerCase().includes(query.toLowerCase()))
+            .sort((a, b) => {
+              if (sortBy === "name") return a.name.localeCompare(b.name);
+              if (sortBy === "level") return (b.level ?? -1) - (a.level ?? -1);
+              return 0;
+            })
+            .map((s) => (
             <li key={s.id} className="border rounded px-3 py-2">
               {editingId === s.id ? (
                 <form onSubmit={saveEdit} className="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
