@@ -1,22 +1,23 @@
 export const dynamic = "force-dynamic";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { currentUser, auth, clerkClient } from "@clerk/nextjs/server";
 
 export default async function ProfilePage() {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await currentUser();
 
   async function updateName(formData: FormData) {
     "use server";
-    const supabase = createSupabaseServerClient();
-    const fullName = String(formData.get("full_name") || "");
-    await supabase.auth.updateUser({ data: { full_name: fullName } });
+    const { userId } = await auth();
+    if (!userId) return;
+    const client = await clerkClient();
+    const fullName = String(formData.get("full_name") || "").trim();
+    const parts = fullName.split(" ").filter(Boolean);
+    const firstName = parts[0] || undefined;
+    const lastName = (parts.slice(1).join(" ") || undefined) as string | undefined;
+    await client.users.updateUser(userId, { firstName, lastName });
   }
 
-  const existingFullNameUnknown = (user?.user_metadata as Record<string, unknown> | undefined)?.["full_name"];
-  const fullNameDefault = typeof existingFullNameUnknown === "string" ? existingFullNameUnknown : "";
+  const fullNameDefault = user?.fullName || "";
 
   return (
     <div>
@@ -24,7 +25,7 @@ export default async function ProfilePage() {
       <div className="space-y-6 max-w-md">
         <div className="border rounded p-4">
           <div className="text-sm text-gray-500">Email</div>
-          <div className="mt-1">{user?.email}</div>
+          <div className="mt-1">{user?.primaryEmailAddress?.emailAddress || user?.emailAddresses?.[0]?.emailAddress}</div>
         </div>
 
         <form action={updateName} className="border rounded p-4 space-y-3">
