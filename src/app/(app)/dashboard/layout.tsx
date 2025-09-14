@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { ReactNode } from "react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import Link from "next/link";

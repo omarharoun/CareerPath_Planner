@@ -1,18 +1,25 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const supabase = useMemo(() => createSupabaseBrowserClient(), []);
+  const [supabase, setSupabase] = useState<ReturnType<typeof createSupabaseBrowserClient> | null>(null);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setSupabase(createSupabaseBrowserClient());
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) return;
     let isMounted = true;
     supabase.auth.getSession().then(({ data }) => {
       if (!isMounted) return;
@@ -37,12 +44,14 @@ export default function LoginPage() {
         <p className="text-sm text-gray-600 mb-6">
           Sign in or create an account to track skills and job applications.
         </p>
-        <Auth
-          supabaseClient={supabase}
-          providers={["google", "github"]}
-          appearance={{ theme: ThemeSupa }}
-          redirectTo={typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined}
-        />
+        {supabase ? (
+          <Auth
+            supabaseClient={supabase}
+            providers={["google", "github"]}
+            appearance={{ theme: ThemeSupa }}
+            redirectTo={typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined}
+          />
+        ) : null}
         <div className="mt-4 text-xs text-gray-500">
           By continuing, you agree to our <Link href="#">Terms</Link> and <Link href="#">Privacy Policy</Link>.
         </div>

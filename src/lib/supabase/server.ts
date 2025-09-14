@@ -11,35 +11,20 @@ export function createSupabaseServerClient() {
     );
   }
 
-  type CookieOptions = {
-    domain?: string;
-    expires?: Date;
-    httpOnly?: boolean;
-    maxAge?: number;
-    path?: string;
-    sameSite?: "lax" | "strict" | "none";
-    secure?: boolean;
-    priority?: "low" | "medium" | "high";
-  };
-
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
-      get(name: string) {
-        return cookies().get(name)?.value;
+      async getAll() {
+        const store = await cookies();
+        return store.getAll().map((c) => ({ name: c.name, value: c.value }));
       },
-      set(name: string, value: string, options?: CookieOptions) {
-        try {
-          // In Route Handlers, this will persist. In Server Components, Next.js may ignore set.
-          cookies().set({ name, value, ...options });
-        } catch {
-          // no-op when not allowed
-        }
-      },
-      remove(name: string, options?: CookieOptions) {
-        try {
-          cookies().set({ name, value: "", ...options, maxAge: 0 });
-        } catch {
-          // no-op when not allowed
+      async setAll(cookiesToSet) {
+        const store = await cookies();
+        for (const { name, value, options } of cookiesToSet) {
+          try {
+            store.set(name, value, options);
+          } catch {
+            // ignore when not allowed (e.g., in some Server Component contexts)
+          }
         }
       },
     },
