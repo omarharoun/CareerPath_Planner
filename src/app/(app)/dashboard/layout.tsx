@@ -1,16 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { ReactNode } from "react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await currentUser();
   if (!user) {
     redirect("/login");
   }

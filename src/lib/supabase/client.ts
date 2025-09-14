@@ -1,6 +1,7 @@
 "use client";
 
 import { createBrowserClient } from "@supabase/ssr";
+import { useAuth } from "@clerk/nextjs";
 
 export function createSupabaseBrowserClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,6 +13,20 @@ export function createSupabaseBrowserClient() {
     );
   }
 
-  return createBrowserClient(supabaseUrl, supabaseAnonKey);
+  return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      fetch: async (input, init) => {
+        try {
+          const { getToken } = useAuth();
+          const token = await getToken({ template: "supabase" });
+          const headers = new Headers(init?.headers || {});
+          if (token) headers.set("Authorization", `Bearer ${token}`);
+          return fetch(input, { ...init, headers });
+        } catch {
+          return fetch(input, init);
+        }
+      },
+    },
+  });
 }
 

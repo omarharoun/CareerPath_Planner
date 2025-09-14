@@ -18,6 +18,7 @@ export default function MarketingHome() {
             <div className="mt-8 flex items-center gap-3">
               <Link href="/app" className="px-5 py-3 rounded bg-gray-900 text-white dark:bg-white dark:text-black">Open app</Link>
               <Link href="/login" className="px-5 py-3 rounded border border-gray-300 dark:border-gray-700">Sign in</Link>
+              <Link href="/sign-up" className="px-5 py-3 rounded border border-gray-300 dark:border-gray-700">Create account</Link>
             </div>
             <div className="mt-8 text-xs text-gray-500">No credit card required.</div>
           </div>
