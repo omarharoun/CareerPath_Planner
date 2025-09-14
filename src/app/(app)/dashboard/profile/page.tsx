@@ -15,6 +15,9 @@ export default async function ProfilePage() {
     await supabase.auth.updateUser({ data: { full_name: fullName } });
   }
 
+  const existingFullNameUnknown = (user?.user_metadata as Record<string, unknown> | undefined)?.["full_name"];
+  const fullNameDefault = typeof existingFullNameUnknown === "string" ? existingFullNameUnknown : "";
+
   return (
     <div>
       <h1 className="text-xl font-semibold mb-4">Profile</h1>
@@ -29,7 +32,7 @@ export default async function ProfilePage() {
             <label className="block text-sm mb-1">Full name</label>
             <input
               name="full_name"
-              defaultValue={(user?.user_metadata as any)?.full_name || ""}
+              defaultValue={fullNameDefault}
               className="w-full border rounded px-3 py-2 bg-transparent"
             />
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Path = { id: string; title: string; description: string | null };
@@ -18,9 +18,18 @@ export default function CareerPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const reloadMilestones = useCallback(async (pathId: string) => {
+    const { data } = await supabase
+      .from("milestones")
+      .select("id,title,target_date,completed,position")
+      .eq("career_path_id", pathId)
+      .order("position", { ascending: true });
+    setMilestones((data || []) as Milestone[]);
+  }, [supabase]);
+
   useEffect(() => {
     if (selectedId) reloadMilestones(selectedId);
-  }, [selectedId]);
+  }, [selectedId, reloadMilestones]);
 
   async function reloadPaths() {
     const { data } = await supabase.from("career_paths").select("id,title,description").order("created_at", { ascending: true });
@@ -29,14 +38,7 @@ export default function CareerPage() {
     if (!selectedId && arr.length) setSelectedId(arr[0].id);
   }
 
-  async function reloadMilestones(pathId: string) {
-    const { data } = await supabase
-      .from("milestones")
-      .select("id,title,target_date,completed,position")
-      .eq("career_path_id", pathId)
-      .order("position", { ascending: true });
-    setMilestones((data || []) as Milestone[]);
-  }
+  // moved into useCallback above
 
   async function addPath(e: React.FormEvent) {
     e.preventDefault();

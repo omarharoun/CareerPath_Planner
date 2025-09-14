@@ -13,14 +13,14 @@ type Job = {
 
 const COLUMNS: Job["status"][] = ["saved", "applied", "interview", "offer", "rejected"];
 
-export default function JobsKanban() {
+export default function JobsKanban({ reloadToken = 0 }: { reloadToken?: number }) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [jobs, setJobs] = useState<Job[]>([]);
 
   useEffect(() => {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reloadToken]);
 
   async function reload() {
     const { data } = await supabase

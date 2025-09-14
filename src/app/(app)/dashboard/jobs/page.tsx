@@ -19,7 +19,7 @@ const statuses: Job["status"][] = ["saved", "applied", "interview", "offer", "re
 
 export default function JobsPage() {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
-  const [jobs, setJobs] = useState<Job[]>([]);
+  const [reloadToken, setReloadToken] = useState(0);
   const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
   const [status, setStatus] = useState<Job["status"]>("saved");
@@ -27,11 +27,8 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
 
   async function fetchJobs() {
-    const { data, error } = await supabase
-      .from("jobs")
-      .select("id,user_id,company,title,status,url,notes,created_at")
-      .order("created_at", { ascending: false });
-    if (!error && data) setJobs(data as Job[]);
+    // light ping to validate access; kanban handles its own fetch
+    await supabase.from("jobs").select("id", { count: "exact", head: true });
   }
 
   useEffect(() => {
@@ -48,7 +45,7 @@ export default function JobsPage() {
       setTitle("");
       setStatus("saved");
       setUrl("");
-      fetchJobs();
+      setReloadToken((t) => t + 1);
     }
   }
 
@@ -81,7 +78,7 @@ export default function JobsPage() {
         </div>
       </form>
 
-      {loading ? <div>Loading…</div> : <JobsKanban />}
+      {loading ? <div>Loading…</div> : <JobsKanban reloadToken={reloadToken} />}
     </div>
   );
 }
