@@ -9,6 +9,10 @@ type Job = {
   title: string;
   status: "saved" | "applied" | "interview" | "offer" | "rejected";
   url: string | null;
+  salary_range: string | null;
+  location: string | null;
+  remote_type: "remote" | "hybrid" | "onsite" | null;
+  priority: number;
 };
 
 const COLUMNS: Job["status"][] = ["saved", "applied", "interview", "offer", "rejected"];
@@ -26,7 +30,8 @@ export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { relo
   async function reload() {
     const { data } = await supabase
       .from("jobs")
-      .select("id,company,title,status,url")
+      .select("id,company,title,status,url,salary_range,location,remote_type,priority")
+      .order("priority", { ascending: false })
       .order("created_at", { ascending: false });
     setJobs((data || []) as Job[]);
   }
@@ -75,12 +80,51 @@ export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { relo
                 key={j.id}
                 draggable
                 onDragStart={(e) => onDragStart(e, j.id)}
-                className="border rounded p-2 bg-white/50 dark:bg-gray-900 cursor-move"
+                className="border rounded-lg p-3 bg-white shadow-sm cursor-move hover:shadow-md transition-shadow"
               >
-                <div className="font-medium text-sm">{j.company} — {j.title}</div>
-                {j.url ? <a className="text-xs underline" href={j.url} target="_blank" rel="noreferrer">Listing</a> : null}
-                <div className="mt-2 flex items-center gap-2">
-                  <button onClick={() => remove(j.id)} className="text-xs px-2 py-0.5 rounded border">Delete</button>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm">{j.company}</div>
+                    <div className="text-sm text-gray-600">{j.title}</div>
+                  </div>
+                  {j.priority > 3 && (
+                    <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full">
+                      High Priority
+                    </span>
+                  )}
+                </div>
+                
+                <div className="space-y-1 text-xs text-gray-500 mb-3">
+                  {j.location && <div>📍 {j.location}</div>}
+                  {j.remote_type && (
+                    <div>
+                      {j.remote_type === 'remote' ? '🏠' : j.remote_type === 'hybrid' ? '🏢🏠' : '🏢'} {j.remote_type.charAt(0).toUpperCase() + j.remote_type.slice(1)}
+                    </div>
+                  )}
+                  {j.salary_range && <div>💰 {j.salary_range}</div>}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {j.url && (
+                    <a 
+                      className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200 hover:bg-blue-100 transition-colors" 
+                      href={j.url} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      View Listing
+                    </a>
+                  )}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remove(j.id);
+                    }} 
+                    className="text-xs text-red-600 hover:text-red-800 transition-colors"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
             ))}
