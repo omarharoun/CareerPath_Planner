@@ -146,7 +146,7 @@ function SignUpForm() {
         <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-8">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-semibold mb-2">Create your account</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Get started with Talent Tracker</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Get started with Careero</p>
           </div>
 
           {error && (
