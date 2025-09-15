@@ -1,15 +1,17 @@
+"use client";
+
 export const dynamic = "force-dynamic";
 
 import { SignIn } from "@clerk/nextjs";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function EmailSignInPage() {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY;
   if (!publishableKey) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md rounded-lg border border-gray-200 dark:border-gray-800 p-6 text-center">
-          <h1 className="text-2xl font-semibold mb-2">Sign in</h1>
+          <h1 className="text-2xl font-semibold mb-2">Sign in with email</h1>
           <p className="text-sm text-gray-600 dark:text-gray-300">Authentication is coming soon.</p>
         </div>
       </div>
@@ -35,10 +37,9 @@ export default function LoginPage() {
           forceRedirectUrl="/dashboard" 
         />
         <div className="text-sm text-gray-600 dark:text-gray-300">
-          Don&apos;t have an account? <Link href="/sign-up" className="underline">Sign up</Link>
+          <Link href="/login" className="underline">← Back to sign in options</Link>
         </div>
       </div>
     </div>
   );
 }
-

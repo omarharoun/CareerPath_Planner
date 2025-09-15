@@ -18,7 +18,22 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="flex flex-col items-center gap-4">
-        <SignUp appearance={{ variables: { colorPrimary: "#111827" } }} forceRedirectUrl="/dashboard" />
+        <SignUp 
+          appearance={{ 
+            variables: { colorPrimary: "#111827" },
+            elements: {
+              formButtonPrimary: "bg-gray-900 hover:bg-gray-800 text-sm normal-case",
+              card: "shadow-none border border-gray-200 dark:border-gray-800",
+              headerTitle: "text-gray-900 dark:text-gray-100",
+              headerSubtitle: "text-gray-600 dark:text-gray-300",
+              socialButtonsBlockButton: "border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800",
+              socialButtonsBlockButtonText: "font-normal",
+              formFieldInput: "border border-gray-300 dark:border-gray-600 focus:border-gray-900 dark:focus:border-gray-100",
+              footerActionLink: "text-gray-900 dark:text-gray-100 hover:text-gray-600 dark:hover:text-gray-300",
+            }
+          }} 
+          forceRedirectUrl="/dashboard" 
+        />
         <div className="text-sm text-gray-600 dark:text-gray-300">
           Already have an account? <Link href="/login" className="underline">Sign in</Link>
         </div>
