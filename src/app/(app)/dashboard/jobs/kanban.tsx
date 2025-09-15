@@ -13,14 +13,15 @@ type Job = {
 
 const COLUMNS: Job["status"][] = ["saved", "applied", "interview", "offer", "rejected"];
 
-export default function JobsKanban() {
+export default function JobsKanban({ reloadToken = 0, filterQuery = "" }: { reloadToken?: number; filterQuery?: string }) {
   const supabase = useMemo(() => createSupabaseBrowserClient(), []);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     reload();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [reloadToken]);
 
   async function reload() {
     const { data } = await supabase
@@ -35,6 +36,13 @@ export default function JobsKanban() {
     setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, status } : j)));
   }
 
+  async function remove(jobId: string) {
+    await supabase.from("jobs").delete().eq("id", jobId);
+    setJobs((prev) => prev.filter((j) => j.id !== jobId));
+    setMessage("Job deleted");
+    setTimeout(() => setMessage(""), 1500);
+  }
+
   function onDragStart(e: React.DragEvent, jobId: string) {
     e.dataTransfer.setData("text/plain", jobId);
   }
@@ -44,8 +52,15 @@ export default function JobsKanban() {
     if (jobId) move(jobId, status);
   }
 
+  const q = filterQuery.toLowerCase();
+  const visible = q
+    ? jobs.filter((j) => j.company.toLowerCase().includes(q) || j.title.toLowerCase().includes(q))
+    : jobs;
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div>
+      {message ? <div className="mb-3 text-sm px-3 py-2 rounded border border-green-200 bg-green-50 text-green-700">{message}</div> : null}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
       {COLUMNS.map((col) => (
         <div
           key={col}
@@ -55,7 +70,7 @@ export default function JobsKanban() {
         >
           <div className="text-sm font-semibold capitalize mb-2">{col}</div>
           <div className="space-y-2">
-            {jobs.filter((j) => j.status === col).map((j) => (
+            {visible.filter((j) => j.status === col).map((j) => (
               <div
                 key={j.id}
                 draggable
@@ -64,11 +79,15 @@ export default function JobsKanban() {
               >
                 <div className="font-medium text-sm">{j.company} — {j.title}</div>
                 {j.url ? <a className="text-xs underline" href={j.url} target="_blank" rel="noreferrer">Listing</a> : null}
+                <div className="mt-2 flex items-center gap-2">
+                  <button onClick={() => remove(j.id)} className="text-xs px-2 py-0.5 rounded border">Delete</button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }

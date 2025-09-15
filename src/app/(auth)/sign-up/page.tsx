@@ -2,18 +2,22 @@
 
 export const dynamic = "force-dynamic";
 
-import { useSignIn } from "@clerk/nextjs";
+import { useSignUp } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AuthWrapper from "@/components/AuthWrapper";
 
-function LoginForm() {
-  const { isLoaded, signIn, setActive } = useSignIn();
+function SignUpForm() {
+  const { isLoaded, signUp, setActive } = useSignUp();
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState("");
   const router = useRouter();
 
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY;
@@ -21,8 +25,8 @@ function LoginForm() {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md rounded-lg border border-gray-200 dark:border-gray-800 p-6 text-center">
-          <h1 className="text-2xl font-semibold mb-2">Sign in</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Authentication is coming soon.</p>
+          <h1 className="text-2xl font-semibold mb-2">Create account</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Sign up is coming soon.</p>
         </div>
       </div>
     );
@@ -36,16 +40,40 @@ function LoginForm() {
     setError("");
 
     try {
-      const result = await signIn.create({
-        identifier: emailAddress,
+      await signUp.create({
+        emailAddress,
         password,
+        firstName,
+        lastName,
       });
 
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setPendingVerification(true);
+    } catch (err: unknown) {
+      const error = err as { errors?: Array<{ message: string }> };
+      setError(error.errors?.[0]?.message || "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onPressVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({
+        code,
+      });
+
+      if (completeSignUp.status === "complete") {
+        await setActive({ session: completeSignUp.createdSessionId });
         router.push("/dashboard");
       } else {
-        console.error("Sign in not complete");
+        console.error("Sign up not complete");
       }
     } catch (err: unknown) {
       const error = err as { errors?: Array<{ message: string }> };
@@ -55,13 +83,70 @@ function LoginForm() {
     }
   };
 
+  if (pendingVerification) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-semibold mb-2">Verify your email</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-300">
+                We sent a verification code to {emailAddress}
+              </p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={onPressVerify} className="space-y-4">
+              <div>
+                <label htmlFor="code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Verification code
+                </label>
+                <input
+                  id="code"
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 dark:bg-gray-800 dark:text-white"
+                  placeholder="Enter verification code"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isLoading || !isLoaded}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Verifying..." : "Verify email"}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setPendingVerification(false)}
+                className="text-sm text-gray-600 dark:text-gray-300 hover:underline"
+              >
+                ← Back to sign up
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <div className="rounded-lg border border-gray-200 dark:border-gray-800 p-8">
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-semibold mb-2">Welcome back</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-300">Sign in to your account</p>
+            <h1 className="text-2xl font-semibold mb-2">Create your account</h1>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Get started with Careero</p>
           </div>
 
           {error && (
@@ -71,6 +156,38 @@ function LoginForm() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  First name
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 dark:bg-gray-800 dark:text-white"
+                  placeholder="First name"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Last name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 dark:bg-gray-800 dark:text-white"
+                  placeholder="Last name"
+                />
+              </div>
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email address
@@ -97,7 +214,7 @@ function LoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 dark:bg-gray-800 dark:text-white"
-                placeholder="Enter your password"
+                placeholder="Create a password"
               />
             </div>
 
@@ -106,7 +223,7 @@ function LoginForm() {
               disabled={isLoading || !isLoaded}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Signing in..." : "Sign in"}
+              {isLoading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
@@ -122,18 +239,18 @@ function LoginForm() {
           </div>
 
           <div className="mt-6 space-y-3">
-            {/* Google Sign In */}
+            {/* Google Sign Up */}
             <button
               onClick={async () => {
-                if (!isLoaded || !signIn) return;
+                if (!isLoaded || !signUp) return;
                 try {
-                  await signIn.authenticateWithRedirect({
+                  await signUp.authenticateWithRedirect({
                     strategy: "oauth_google",
                     redirectUrl: "/dashboard",
                     redirectUrlComplete: "/dashboard",
                   });
                 } catch (error) {
-                  console.error("Google sign-in error:", error);
+                  console.error("Google sign-up error:", error);
                 }
               }}
               className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
@@ -159,18 +276,18 @@ function LoginForm() {
               <span className="text-sm font-medium">Continue with Google</span>
             </button>
 
-            {/* Facebook Sign In */}
+            {/* Facebook Sign Up */}
             <button
               onClick={async () => {
-                if (!isLoaded || !signIn) return;
+                if (!isLoaded || !signUp) return;
                 try {
-                  await signIn.authenticateWithRedirect({
+                  await signUp.authenticateWithRedirect({
                     strategy: "oauth_facebook",
                     redirectUrl: "/dashboard",
                     redirectUrlComplete: "/dashboard",
                   });
                 } catch (error) {
-                  console.error("Facebook sign-in error:", error);
+                  console.error("Facebook sign-up error:", error);
                 }
               }}
               className="w-full flex items-center justify-center gap-3 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
@@ -184,9 +301,9 @@ function LoginForm() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Don&apos;t have an account?{" "}
-              <Link href="/sign-up" className="font-medium text-gray-900 dark:text-gray-100 hover:underline">
-                Sign up
+              Already have an account?{" "}
+              <Link href="/login" className="font-medium text-gray-900 dark:text-gray-100 hover:underline">
+                Sign in
               </Link>
             </p>
           </div>
@@ -196,14 +313,14 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || process.env.CLERK_PUBLISHABLE_KEY;
   if (!publishableKey) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
         <div className="w-full max-w-md rounded-lg border border-gray-200 dark:border-gray-800 p-6 text-center">
-          <h1 className="text-2xl font-semibold mb-2">Sign in</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-300">Authentication is coming soon.</p>
+          <h1 className="text-2xl font-semibold mb-2">Create account</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-300">Sign up is coming soon.</p>
         </div>
       </div>
     );
@@ -211,7 +328,7 @@ export default function LoginPage() {
 
   return (
     <AuthWrapper>
-      <LoginForm />
+      <SignUpForm />
     </AuthWrapper>
   );
 }

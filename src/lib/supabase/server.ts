@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
 
-export function createSupabaseServerClient() {
+export async function createSupabaseServerClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
@@ -10,6 +11,9 @@ export function createSupabaseServerClient() {
       "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Did you set up your environment variables?"
     );
   }
+
+  const { getToken } = await auth();
+  const clerkSupabaseToken = await (getToken ? getToken({ template: "supabase" }).catch(() => null) : Promise.resolve(null));
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
@@ -27,6 +31,9 @@ export function createSupabaseServerClient() {
           }
         }
       },
+    },
+    global: {
+      headers: clerkSupabaseToken ? { Authorization: `Bearer ${clerkSupabaseToken}` } : undefined,
     },
   });
 }

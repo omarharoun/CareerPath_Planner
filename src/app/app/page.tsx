@@ -1,12 +1,9 @@
 export const dynamic = "force-dynamic";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { currentUser } from "@clerk/nextjs/server";
 
 export default async function AppRedirectPage() {
-  const supabase = createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await currentUser();
 
   const target = user ? "/dashboard" : "/login";
   return (
