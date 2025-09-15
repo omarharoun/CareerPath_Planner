@@ -96,7 +96,7 @@ export default function SkillsPage() {
         </div>
         <div>
           <label className="block text-sm mb-1">Sort by</label>
-          <select className="w-44 border rounded px-3 py-2 bg-transparent" value={sortBy} onChange={(e) => setSortBy(e.target.value as any)}>
+          <select className="w-44 border rounded px-3 py-2 bg-transparent" value={sortBy} onChange={(e) => setSortBy(e.target.value as "created" | "name" | "level")}>
             <option value="created">Created</option>
             <option value="name">Name</option>
             <option value="level">Level</option>

@@ -55,7 +55,7 @@ export default function ResourcesPage() {
     return () => {
       ignore = true;
     };
-  }, [supabase, page]);
+  }, [supabase, page, importDemo]);
 
   const filtered = catalog.filter((r) => {
     const q = query.toLowerCase();
